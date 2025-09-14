@@ -1,0 +1,23 @@
+{
+  "vscode": {
+    "name": "Visual Studio Code",
+    "description": "Microsoft's VS Code editor from AUR",
+    "commands": [
+      "yay -S --noconfirm visual-studio-code-bin"
+    ]
+  },
+  "google-chrome": {
+    "name": "Google Chrome",
+    "description": "Google Chrome browser from AUR",
+    "commands": [
+      "yay -S --noconfirm google-chrome"
+    ]
+  },
+  "slack": {
+    "name": "Slack",
+    "description": "Slack from AUR",
+    "commands": [
+      "yay -S --noconfirm slack-desktop"
+    ]
+  }
+}

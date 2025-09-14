@@ -1,0 +1,44 @@
+{
+  "vscode": {
+    "name": "Visual Studio Code",
+    "description": "Microsoft's VS Code editor requires adding Microsoft's repository",
+    "commands": [
+      "sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc",
+      "sudo sh -c 'echo -e \"[code]\\nname=Visual Studio Code\\nbaseurl=https://packages.microsoft.com/yumrepos/vscode\\nenabled=1\\nautorefresh=1\\ntype=rpm-md\\ngpgcheck=1\\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc\" > /etc/yum.repos.d/vscode.repo'",
+      "dnf check-update",
+      "sudo dnf install -y code"
+    ]
+  },
+  "google-chrome": {
+    "name": "Google Chrome",
+    "description": "Google Chrome browser requires downloading the .rpm package",
+    "commands": [
+      "wget https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm",
+      "sudo dnf localinstall -y google-chrome-stable_current_x86_64.rpm"
+    ]
+  },
+  "discord": {
+    "name": "Discord",
+    "description": "Discord requires downloading the .rpm package",
+    "commands": [
+      "wget -O discord.rpm 'https://discord.com/api/download?platform=linux&format=rpm'",
+      "sudo dnf localinstall -y discord.rpm"
+    ]
+  },
+  "slack": {
+    "name": "Slack",
+    "description": "Slack requires downloading the .rpm package",
+    "commands": [
+      "wget https://downloads.slack-edge.com/releases/linux/4.38.125/prod/x64/slack-4.38.125-0.1.el8.x86_64.rpm",
+      "sudo dnf localinstall -y slack-4.38.125-0.1.el8.x86_64.rpm"
+    ]
+  },
+  "spotify": {
+    "name": "Spotify",
+    "description": "Spotify requires adding Spotify's repository",
+    "commands": [
+      "sudo dnf config-manager --add-repo=https://negativo17.org/repos/fedora-spotify.repo",
+      "sudo dnf install -y spotify-client"
+    ]
+  }
+}

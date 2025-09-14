@@ -194,6 +194,7 @@
             // --- APPLICATION STATE ---
             const appState = {
                 globalSoftwareList: [], presetsList: [], distroPackageMap: {},
+                complexInstallMap: {}, // For packages needing multi-step installation
                 selectedDistroKey: null, selectedApps: new Set(),
                 activePresetName: null,
             };
@@ -305,7 +306,7 @@
                     applist.className = 'flex flex-col gap-3';
                     
                     category.apps.forEach(app => {
-                        const isAvailable = appState.distroPackageMap[app.id] !== null;
+                        const isAvailable = appState.distroPackageMap[app.id] !== null || appState.complexInstallMap[app.id];
                         const label = document.createElement('label');
                         label.className = 'brutalist-checkbox-label';
                         if (!isAvailable) label.classList.add('disabled');
@@ -352,6 +353,19 @@
                     const response = await fetch(`data/${distributions[distroKey].dataFile}`);
                     if (!response.ok) throw new Error(`HTTP error loading data file`);
                     appState.distroPackageMap = await response.json();
+                    
+                    // Load complex installation data for this distribution
+                    try {
+                        const complexResponse = await fetch(`data/${distroKey}-complex.json`);
+                        if (complexResponse.ok) {
+                            appState.complexInstallMap = await complexResponse.json();
+                        } else {
+                            appState.complexInstallMap = {};
+                        }
+                    } catch (error) {
+                        console.log(`No complex installation data found for ${distroKey}`);
+                        appState.complexInstallMap = {};
+                    }
                     
                     const availableApps = new Set(Object.keys(appState.distroPackageMap).filter(id => appState.distroPackageMap[id]));
                     appState.selectedApps = new Set([...appState.selectedApps].filter(id => availableApps.has(id)));
@@ -438,31 +452,63 @@
                 }
 
                 const distro = distributions[appState.selectedDistroKey];
-                let commandParts = [];
-                let baseCommand = [distro.manager];
-
-                if(optionUpdate.checked) {
-                    let updatePart = `${distro.manager} ${distro.updateCmd}`;
-                    if(optionSudo.checked) updatePart = `sudo ${updatePart}`;
-                    commandParts.push(updatePart, '&&');
-                }
-
-                let installPart = `${distro.installCmd}`;
-                const packages = [...appState.selectedApps].map(id => appState.distroPackageMap[id]).filter(Boolean);
-                let installCommand = [distro.manager, installPart, ...packages];
-                if(optionConfirm.checked) {
-                    // find position of install command to insert flag
-                    const installCmdIndex = installCommand.indexOf(distro.installCmd);
-                    installCommand.splice(installCmdIndex + 1, 0, distro.confirmFlag);
-                }
+                const selectedAppsArray = [...appState.selectedApps];
                 
-                if (optionSudo.checked) {
-                     commandParts.push('sudo');
+                // Separate simple and complex packages
+                const simplePackages = [];
+                const complexPackages = [];
+                
+                selectedAppsArray.forEach(id => {
+                    if (appState.complexInstallMap[id]) {
+                        complexPackages.push(id);
+                    } else if (appState.distroPackageMap[id]) {
+                        simplePackages.push(appState.distroPackageMap[id]);
+                    }
+                });
+
+                let allCommands = [];
+
+                // Add update command if requested
+                if (optionUpdate.checked && (simplePackages.length > 0 || complexPackages.length > 0)) {
+                    let updateCmd = `${distro.manager} ${distro.updateCmd}`;
+                    if (optionSudo.checked) updateCmd = `sudo ${updateCmd}`;
+                    allCommands.push(updateCmd);
                 }
-                 commandParts.push(...installCommand);
 
+                // Add simple package installations
+                if (simplePackages.length > 0) {
+                    let installCommand = [distro.manager, distro.installCmd];
+                    if (optionConfirm.checked) {
+                        installCommand.splice(2, 0, distro.confirmFlag);
+                    }
+                    installCommand.push(...simplePackages);
+                    
+                    let fullInstallCmd = installCommand.join(' ');
+                    if (optionSudo.checked) fullInstallCmd = `sudo ${fullInstallCmd}`;
+                    allCommands.push(fullInstallCmd);
+                }
 
-                commandOutput.value = commandParts.join(' ');
+                // Add complex package installations
+                complexPackages.forEach(id => {
+                    const complexInstall = appState.complexInstallMap[id];
+                    if (complexInstall && complexInstall.commands) {
+                        allCommands.push(`\n# Installing ${complexInstall.name}`);
+                        allCommands.push(...complexInstall.commands);
+                    }
+                });
+
+                // Join commands properly
+                if (allCommands.length > 0) {
+                    // Check if we have any complex installations (multi-line)
+                    const hasComplexInstalls = complexPackages.length > 0;
+                    if (hasComplexInstalls) {
+                        commandOutput.value = allCommands.join('\n');
+                    } else {
+                        commandOutput.value = allCommands.join(' && ');
+                    }
+                } else {
+                    commandOutput.value = '';
+                }
             }
             
             function copyCommandToClipboard() {

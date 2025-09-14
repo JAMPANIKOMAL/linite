@@ -1,8 +1,9 @@
 {
   "firefox": "firefox-esr",
   "chromium": "chromium",
+  "google-chrome": null,
   "git": "git",
-  "vscode": "code",
+  "vscode": null,
   "docker": "docker.io",
   "neovim": "neovim",
   "build-essential": "build-essential",

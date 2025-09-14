@@ -3,7 +3,8 @@
     "category": "BROWSERS",
     "apps": [
       { "id": "firefox", "name": "Firefox", "description": "A popular, open-source web browser focused on privacy." },
-      { "id": "chromium", "name": "Chromium", "description": "The open-source codebase for Google Chrome." }
+      { "id": "chromium", "name": "Chromium", "description": "The open-source codebase for Google Chrome." },
+      { "id": "google-chrome", "name": "Google Chrome", "description": "Google's proprietary web browser with sync and advanced features." }
     ]
   },
   {
