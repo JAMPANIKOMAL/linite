@@ -144,17 +144,17 @@
                 <div class="brutalist-border p-4 md:p-6 mt-8">
                     <h2 class="text-xl font-bold uppercase">GENERATE COMMAND</h2>
                     <div id="command-options" class="flex flex-wrap gap-x-6 gap-y-4 my-4">
-                         <label class="brutalist-checkbox-label">
-                            <input type="checkbox" id="option-sudo" checked>
-                            <span class="checkbox-box">[X]</span><span>USE SUDO</span>
+                         <label class="brutalist-checkbox-label" title="Prefixes the command with 'sudo' to run it with administrative privileges, which is usually required for installing software.">
+                            <input type="checkbox" id="option-sudo">
+                            <span class="checkbox-box">[&nbsp;]</span><span>RUN AS ADMIN (SUDO)</span>
                         </label>
-                        <label class="brutalist-checkbox-label">
-                            <input type="checkbox" id="option-update" checked>
-                            <span class="checkbox-box">[X]</span><span>UPDATE REPOS</span>
+                        <label class="brutalist-checkbox-label" title="Updates your system's list of available software packages before installing. Recommended to ensure you get the latest versions.">
+                            <input type="checkbox" id="option-update">
+                            <span class="checkbox-box">[&nbsp;]</span><span>SYNC PACKAGES</span>
                         </label>
-                        <label class="brutalist-checkbox-label">
-                            <input type="checkbox" id="option-confirm" checked>
-                            <span class="checkbox-box">[X]</span><span>AUTO-CONFIRM</span>
+                        <label class="brutalist-checkbox-label" title="Automatically answers 'yes' to any confirmation prompts during installation. Useful for unattended scripting.">
+                            <input type="checkbox" id="option-confirm">
+                            <span class="checkbox-box">[&nbsp;]</span><span>SKIP PROMPTS</span>
                         </label>
                     </div>
                     <div class="relative">
@@ -383,6 +383,8 @@
             
             function addOptionListeners() {
                 [optionSudo, optionUpdate, optionConfirm].forEach(opt => {
+                     // Set initial state based on unchecked default
+                     opt.nextElementSibling.innerHTML = opt.checked ? '[X]' : '[&nbsp;]';
                      opt.addEventListener('change', () => {
                         opt.nextElementSibling.innerHTML = opt.checked ? '[X]' : '[&nbsp;]';
                         updateCommand();
@@ -427,6 +429,14 @@
                     commandParts.push(distro.updateCmd);
                     if (distro.manager === 'apt-get') commandParts.push('&&');
                 }
+                // This logic needs to handle the case where update is checked but sudo is not.
+                if (distro.manager === 'apt-get' && optionUpdate.checked) {
+                    if(optionSudo.checked) commandParts.push('sudo');
+                    commandParts.push(distro.manager);
+                } else if (distro.manager !== 'apt-get' || !optionUpdate.checked) {
+                    // For other managers, or if update is not selected, this part is not needed in the same way.
+                }
+
                 if (distro.manager === 'apt-get' && optionSudo.checked && optionUpdate.checked) {
                     commandParts.push('sudo', distro.manager);
                 }
@@ -450,5 +460,6 @@
     </script>
 </body>
 </html>
+
 
 
