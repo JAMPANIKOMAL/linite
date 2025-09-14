@@ -180,6 +180,7 @@
             const appState = {
                 globalSoftwareList: [], presetsList: [], distroPackageMap: {},
                 selectedDistroKey: null, selectedApps: new Set(),
+                activePresetName: null,
             };
 
             // --- DOM ELEMENTS ---
@@ -266,7 +267,10 @@
                     button.className = 'brutalist-button';
                     button.textContent = preset.name;
                     button.title = preset.description;
-                    button.addEventListener('click', () => handlePresetSelect(preset.apps));
+                    if (appState.activePresetName === preset.name) {
+                        button.classList.add('active');
+                    }
+                    button.addEventListener('click', () => handlePresetSelect(preset.name, preset.apps));
                     presetContainer.appendChild(button);
                 });
             }
@@ -321,6 +325,7 @@
             // --- EVENT HANDLERS ---
             async function handleDistroSelect(distroKey, distroName) {
                 appState.selectedDistroKey = distroKey;
+                appState.activePresetName = null; // Reset preset on distro change
                 
                 distroSelectionView.style.display = 'none';
                 appSelectionView.style.display = 'block';
@@ -344,15 +349,29 @@
 
             function handleAppSelect(appId, isSelected) {
                 isSelected ? appState.selectedApps.add(appId) : appState.selectedApps.delete(appId);
+                checkPresetState();
                 updateCommand();
             }
 
-            function handlePresetSelect(appIds) {
-                appState.selectedApps.clear();
-                const availableApps = new Set(Object.keys(appState.distroPackageMap).filter(id => appState.distroPackageMap[id]));
-                appIds.forEach(appId => {
-                    if (availableApps.has(appId)) appState.selectedApps.add(appId);
-                });
+            function handlePresetSelect(presetName, appIds) {
+                // If the clicked preset is already active, deselect it.
+                if (appState.activePresetName === presetName) {
+                    appState.activePresetName = null;
+                    appState.selectedApps.clear();
+                } else {
+                    // Otherwise, select the new preset.
+                    appState.activePresetName = presetName;
+                    appState.selectedApps.clear();
+                    const availableApps = new Set(Object.keys(appState.distroPackageMap).filter(id => appState.distroPackageMap[id]));
+                    appIds.forEach(appId => {
+                        if (availableApps.has(appId)) {
+                            appState.selectedApps.add(appId);
+                        }
+                    });
+                }
+                
+                // Rerender both the presets and the grid to reflect changes
+                renderPresetButtons(); 
                 renderSoftwareGrid();
                 updateCommand();
             }
@@ -372,6 +391,30 @@
             }
 
             // --- LOGIC ---
+            function checkPresetState() {
+                if (!appState.activePresetName) return;
+
+                const activePreset = appState.presetsList.find(p => p.name === appState.activePresetName);
+                if (!activePreset) return;
+
+                const availablePresetApps = new Set(activePreset.apps.filter(id => appState.distroPackageMap[id] !== null));
+
+                let isMatching = availablePresetApps.size === appState.selectedApps.size;
+                if (isMatching) {
+                    for (const appId of availablePresetApps) {
+                        if (!appState.selectedApps.has(appId)) {
+                            isMatching = false;
+                            break;
+                        }
+                    }
+                }
+
+                if (!isMatching) {
+                    appState.activePresetName = null;
+                    renderPresetButtons();
+                }
+            }
+
             function updateCommand() {
                 if (!appState.selectedDistroKey || appState.selectedApps.size === 0) {
                     commandOutput.value = ''; return;
@@ -407,4 +450,5 @@
     </script>
 </body>
 </html>
+
 
