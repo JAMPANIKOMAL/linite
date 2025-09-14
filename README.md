@@ -2,7 +2,7 @@
 
 A fast, minimalist web app for generating batch-install commands for your favorite Linux software.
 
-## [Live Website](https://linite.app)
+**Live Website:** [Linite](https://jampanikomal.github.io/linite/)
 
 Linite streamlines the process of setting up a new Linux machine. Instead of installing applications one by one, you can select everything you need from a curated list, and Linite will generate a single, ready-to-paste command for your specific distribution.
 
@@ -16,7 +16,7 @@ Linite streamlines the process of setting up a new Linux machine. Instead of ins
 
 ## How to Use
 
-1. Go to the [Linite website](https://linite.app).
+1. Go to the [Linite website](https://jampanikomal.github.io/linite/).
 2. Select your Linux distribution from one of the two menus.
 3. Choose a preset or manually select your desired software.
 4. Configure the command options (e.g., add `sudo`).
@@ -36,12 +36,6 @@ This project is open to contributions! The easiest way to help is by expanding t
 
 This project was developed by Jampani Komal with the collaborative assistance of Google's Gemini.
 
-## Links
-
-- [Project Website](https://jampanikomal.github.io/linite/)
-- [MIT License](./LICENSE)
-
 ## License
 
 This project is open source and available under the [MIT License](./LICENSE).
-
