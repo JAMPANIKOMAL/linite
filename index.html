@@ -96,21 +96,21 @@
             <!-- STEP 1 & 2: SYSTEM SELECTION -->
             <div id="distro-selection-view">
                 <div id="family-selection-box" class="brutalist-border p-4 md:p-6">
-                    <h2 class="text-xl font-bold mb-4 uppercase">[1] CHOOSE DISTRO FAMILY (ADVANCED)</h2>
+                    <h2 class="text-xl font-bold mb-4 uppercase">CHOOSE DISTRO FAMILY</h2>
                     <div id="family-buttons" class="flex flex-wrap gap-4">
                         <!-- Family buttons populated by JS -->
                     </div>
                 </div>
 
                 <div id="distribution-selection-box" class="brutalist-border p-4 md:p-6 mt-8">
-                    <h2 class="text-xl font-bold mb-4 uppercase">[2] CHOOSE DISTRIBUTION</h2>
+                    <h2 class="text-xl font-bold mb-4 uppercase">CHOOSE DISTRIBUTION</h2>
                     <div id="distribution-buttons" class="flex flex-wrap gap-4">
                         <!-- Distribution buttons populated by JS -->
                     </div>
                 </div>
             </div>
 
-            <!-- STEP 3+: APP SELECTION VIEW -->
+            <!-- APP SELECTION VIEW -->
             <div id="app-selection-view" style="display: none;">
                  <div class="flex justify-between items-center mb-4">
                      <p id="selected-distro-display" class="font-bold text-lg"></p>
@@ -118,19 +118,19 @@
                  </div>
                 <!-- PRESET SELECTION -->
                 <div id="preset-selection" class="brutalist-border p-4 md:p-6">
-                    <h2 class="text-xl font-bold uppercase mb-4">[3] CHOOSE A PRESET (OPTIONAL)</h2>
+                    <h2 class="text-xl font-bold uppercase mb-4">CHOOSE A PRESET (OPTIONAL)</h2>
                     <div id="preset-buttons" class="flex flex-wrap gap-4"></div>
                 </div>
 
                 <!-- SOFTWARE SELECTION -->
                 <div id="software-container" class="brutalist-border p-4 md:p-6 mt-8">
-                    <h2 class="text-xl font-bold mb-4 uppercase">[4] SELECT SOFTWARE</h2>
+                    <h2 class="text-xl font-bold mb-4 uppercase">SELECT SOFTWARE</h2>
                     <div id="software-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-8"></div>
                 </div>
 
                 <!-- COMMAND OUTPUT -->
                 <div class="brutalist-border p-4 md:p-6 mt-8">
-                    <h2 class="text-xl font-bold mb-4 uppercase">[5] GENERATE COMMAND</h2>
+                    <h2 class="text-xl font-bold mb-4 uppercase">GENERATE COMMAND</h2>
                     <div id="command-options" class="flex flex-wrap gap-x-6 gap-y-4 mb-4">
                          <label class="brutalist-checkbox-label">
                             <input type="checkbox" id="option-sudo" checked>
@@ -199,7 +199,7 @@
                     appState.presetsList = await presetsResponse.json();
                     
                     renderFamilySelection();
-                    renderDistributionSelection(); // Render all initially
+                    renderDistributionSelection();
                     addEventListeners();
                 } catch (error) {
                     console.error("Initialization failed:", error);
@@ -216,32 +216,20 @@
             // --- RENDERING ---
             function renderFamilySelection() {
                 familyButtonsContainer.innerHTML = '';
-                 const allButton = document.createElement('button');
-                allButton.className = 'brutalist-button active'; // Active by default
-                allButton.textContent = 'All';
-                allButton.addEventListener('click', () => {
-                    document.querySelectorAll('#family-buttons button').forEach(btn => btn.classList.remove('active'));
-                    allButton.classList.add('active');
-                    renderDistributionSelection(); // Render all distros
-                });
-                familyButtonsContainer.appendChild(allButton);
-
                 Object.keys(distributions).forEach(key => {
                     const button = document.createElement('button');
                     button.className = 'brutalist-button';
-                    button.textContent = distributions[key].family;
-                    button.dataset.familyKey = key;
-                    button.addEventListener('click', () => handleFamilySelect(key, button));
+                    const family = distributions[key];
+                    button.textContent = family.family;
+                    // Clicking a family is a shortcut for selecting the base distribution of that family
+                    button.addEventListener('click', () => handleDistroSelect(key, family.family));
                     familyButtonsContainer.appendChild(button);
                 });
             }
             
-            // Can be called with a key to filter, or without to show all
-            function renderDistributionSelection(familyKey = null) {
+            function renderDistributionSelection() {
                 distributionButtonsContainer.innerHTML = '';
-                const keysToRender = familyKey ? [familyKey] : Object.keys(distributions);
-
-                keysToRender.forEach(key => {
+                Object.keys(distributions).forEach(key => {
                     const family = distributions[key];
                     family.variants.forEach(variant => {
                         const button = document.createElement('button');
@@ -319,12 +307,6 @@
             }
 
             // --- EVENT HANDLERS ---
-            function handleFamilySelect(familyKey, clickedButton) {
-                document.querySelectorAll('#family-buttons button').forEach(btn => btn.classList.remove('active'));
-                clickedButton.classList.add('active');
-                renderDistributionSelection(familyKey);
-            }
-
             async function handleDistroSelect(distroKey, distroName) {
                 appState.selectedDistroKey = distroKey;
                 
