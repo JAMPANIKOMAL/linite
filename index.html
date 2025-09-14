@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linite | Brutalist Linux Installer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Space Mono', monospace;
+            background-color: #000000;
+            color: #ffffff;
+            overscroll-behavior: none;
+        }
+        .bordered-box {
+            border: 2px solid #ffffff;
+        }
+        .btn {
+            border: 2px solid #ffffff;
+            background-color: #000000;
+            color: #ffffff;
+            padding: 0.75rem 1.5rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: all 0.2s ease-in-out;
+        }
+        .btn:hover:not(:disabled) {
+            background-color: #ffffff;
+            color: #000000;
+        }
+        .btn-primary {
+            background-color: #ffffff;
+            color: #000000;
+        }
+        .btn-primary:hover:not(:disabled) {
+            background-color: #000000;
+            color: #ffffff;
+        }
+        .hidden {
+            display: none !important;
+        }
+        /* Custom Checkbox */
+        .custom-checkbox {
+            appearance: none;
+            -webkit-appearance: none;
+            height: 20px;
+            width: 20px;
+            border: 2px solid #ffffff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+        }
+        .custom-checkbox:checked::before {
+            content: 'X';
+            font-size: 14px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+        .custom-checkbox:disabled {
+            border-color: #555;
+            background-color: #222;
+            cursor: not-allowed;
+        }
+        .disabled-label {
+            color: #777;
+            cursor: not-allowed;
+        }
+        .command-output {
+            background-color: #111;
+            border: 2px solid #555;
+            min-height: 100px;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Wrapper for border -->
+    <div class="p-2 sm:p-4 min-h-screen">
+        <div class="bordered-box min-h-[calc(100vh-1rem)] sm:min-h-[calc(100vh-2rem)] p-4 sm:p-6 lg:p-8 flex flex-col">
+
+            <!-- Header -->
+            <header class="pb-4 border-b-2 border-white flex justify-between items-center">
+                <div>
+                    <h1 class="text-xl font-bold">[LINITE]</h1>
+                    <p class="text-xs">// BATCH INSTALLER FOR LINUX</p>
+                </div>
+                <button id="changeDistroBtn" class="btn hidden">[CHANGE DISTRO]</button>
+            </header>
+
+            <!-- Main Content -->
+            <main class="flex-grow mt-6">
+                <!-- Step 1: Distro Selection -->
+                <section id="distro-selection">
+                    <h2 class="text-lg font-bold uppercase">[SELECT DISTRIBUTION]</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                        <button class="btn btn-primary" data-distro="debian">DEBIAN / UBUNTU</button>
+                        <button class="btn btn-primary" data-distro="fedora">FEDORA / CENTOS</button>
+                        <button class="btn btn-primary" data-distro="arch">ARCH / MANJARO</button>
+                    </div>
+                </section>
+
+                <!-- Step 2: Software Selection -->
+                <section id="software-selection" class="hidden">
+                     <h2 id="software-title" class="text-lg font-bold uppercase">[SELECT SOFTWARE FOR <span id="distro-name"></span>]</h2>
+                     <div id="software-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-8 mt-6">
+                         <!-- Categories and Apps will be dynamically inserted here -->
+                     </div>
+                </section>
+            </main>
+
+            <!-- Step 3: Command Output -->
+            <footer id="command-output-area" class="mt-8 pt-6 border-t-2 border-white hidden">
+                <h3 class="font-bold uppercase mb-2">[GENERATED COMMAND]</h3>
+                <div class="relative command-output p-4 font-mono whitespace-pre-wrap break-all" id="command-display">
+                    // SELECT APPLICATIONS TO GENERATE THE INSTALL COMMAND...
+                </div>
+                <button id="copy-btn" class="btn btn-primary mt-4 w-full md:w-auto" disabled>[COPY COMMAND]</button>
+            </footer>
+        </div>
+    </div>
+    
+    <!-- Hidden textarea for copy functionality -->
+    <textarea id="copy-buffer" class="absolute -left-full"></textarea>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DATA ---
+            const softwareData = [
+                {
+                    category: 'BROWSERS',
+                    apps: [
+                        { name: 'Firefox', id: 'firefox', packages: { debian: 'firefox-esr', fedora: 'firefox', arch: 'firefox' } },
+                        { name: 'Chromium', id: 'chromium', packages: { debian: 'chromium', fedora: 'chromium', arch: 'chromium' } },
+                    ]
+                },
+                {
+                    category: 'DEVELOPMENT',
+                    apps: [
+                        { name: 'Git', id: 'git', packages: { debian: 'git', fedora: 'git', arch: 'git' } },
+                        { name: 'VS Code', id: 'vscode', packages: { debian: 'code', fedora: 'code', arch: 'code' } },
+                        { name: 'Docker', id: 'docker', packages: { debian: 'docker.io', fedora: 'docker', arch: 'docker' } },
+                        { name: 'Neovim', id: 'neovim', packages: { debian: 'neovim', fedora: 'neovim', arch: 'neovim' } },
+                    ]
+                },
+                {
+                    category: 'COMMUNICATION',
+                    apps: [
+                        { name: 'Discord', id: 'discord', packages: { debian: null, fedora: null, arch: 'discord' } },
+                        { name: 'Slack', id: 'slack', packages: { debian: null, fedora: null, arch: 'slack-desktop' } },
+                    ]
+                },
+                {
+                    category: 'MEDIA & GRAPHICS',
+                    apps: [
+                        { name: 'VLC', id: 'vlc', packages: { debian: 'vlc', fedora: 'vlc', arch: 'vlc' } },
+                        { name: 'GIMP', id: 'gimp', packages: { debian: 'gimp', fedora: 'gimp', arch: 'gimp' } },
+                        { name: 'Inkscape', id: 'inkscape', packages: { debian: 'inkscape', fedora: 'inkscape', arch: 'inkscape' } },
+                        { name: 'Spotify', id: 'spotify', packages: { debian: null, fedora: null, arch: 'spotify-launcher' } },
+                    ]
+                },
+                {
+                    category: 'UTILITIES',
+                    apps: [
+                        { name: 'htop', id: 'htop', packages: { debian: 'htop', fedora: 'htop', arch: 'htop' } },
+                        { name: 'Neofetch', id: 'neofetch', packages: { debian: 'neofetch', fedora: 'neofetch', arch: 'neofetch' } },
+                        { name: 'Timeshift', id: 'timeshift', packages: { debian: 'timeshift', fedora: 'timeshift', arch: 'timeshift' } },
+                        { name: 'Stacer', id: 'stacer', packages: { debian: 'stacer', fedora: null, arch: 'stacer' } },
+                    ]
+                },
+                {
+                    category: 'GAMING',
+                    apps: [
+                         { name: 'Steam', id: 'steam', packages: { debian: 'steam', fedora: 'steam', arch: 'steam' } },
+                    ]
+                }
+            ];
+
+            const commandTemplates = {
+                debian: 'sudo apt install -y',
+                fedora: 'sudo dnf install -y',
+                arch: 'sudo pacman -S --noconfirm'
+            };
+
+            // --- STATE ---
+            let selectedDistro = null;
+            let selectedApps = new Set();
+
+            // --- DOM ELEMENTS ---
+            const distroSelectionEl = document.getElementById('distro-selection');
+            const softwareSelectionEl = document.getElementById('software-selection');
+            const commandOutputAreaEl = document.getElementById('command-output-area');
+            const softwareGridEl = document.getElementById('software-grid');
+            const distroNameEl = document.getElementById('distro-name');
+            const commandDisplayEl = document.getElementById('command-display');
+            const copyBtn = document.getElementById('copy-btn');
+            const changeDistroBtn = document.getElementById('changeDistroBtn');
+            const copyBuffer = document.getElementById('copy-buffer');
+
+            // --- FUNCTIONS ---
+            const renderSoftwareGrid = () => {
+                softwareGridEl.innerHTML = '';
+                softwareData.forEach(category => {
+                    const categoryDiv = document.createElement('div');
+                    const categoryTitle = document.createElement('h3');
+                    categoryTitle.className = 'font-bold uppercase text-sm border-b-2 border-white pb-2 mb-3';
+                    categoryTitle.textContent = `// ${category.category}`;
+                    categoryDiv.appendChild(categoryTitle);
+
+                    category.apps.forEach(app => {
+                        const isAvailable = app.packages[selectedDistro] !== null;
+                        
+                        const appLabel = document.createElement('label');
+                        appLabel.className = 'flex items-center mb-2';
+                        if (isAvailable) {
+                            appLabel.classList.add('cursor-pointer');
+                        } else {
+                            appLabel.classList.add('disabled-label');
+                        }
+                        
+                        const checkbox = document.createElement('input');
+                        checkbox.type = 'checkbox';
+                        checkbox.className = 'custom-checkbox';
+                        checkbox.value = app.id;
+                        checkbox.disabled = !isAvailable;
+                        
+                        const appName = document.createElement('span');
+                        appName.textContent = app.name;
+                        
+                        appLabel.appendChild(checkbox);
+                        appLabel.appendChild(appName);
+                        categoryDiv.appendChild(appLabel);
+                    });
+                    softwareGridEl.appendChild(categoryDiv);
+                });
+            };
+
+            const updateCommand = () => {
+                if (selectedApps.size === 0) {
+                    commandDisplayEl.textContent = '// SELECT APPLICATIONS TO GENERATE THE INSTALL COMMAND...';
+                    copyBtn.disabled = true;
+                    copyBtn.classList.remove('btn-primary');
+                    return;
+                }
+
+                const packages = Array.from(selectedApps).map(appId => {
+                    for (const category of softwareData) {
+                        const app = category.apps.find(a => a.id === appId);
+                        if (app) return app.packages[selectedDistro];
+                    }
+                }).filter(Boolean); // Filter out any potential nulls
+
+                const command = `${commandTemplates[selectedDistro]} ${packages.join(' ')}`;
+                commandDisplayEl.textContent = command;
+                copyBtn.disabled = false;
+                copyBtn.classList.add('btn-primary');
+            };
+            
+            const handleDistroSelect = (distro) => {
+                selectedDistro = distro;
+                selectedApps.clear();
+                
+                distroNameEl.textContent = distro.toUpperCase();
+                distroSelectionEl.classList.add('hidden');
+                softwareSelectionEl.classList.remove('hidden');
+                commandOutputAreaEl.classList.remove('hidden');
+                changeDistroBtn.classList.remove('hidden');
+
+                renderSoftwareGrid();
+                updateCommand();
+            };
+
+            const resetToDistroSelection = () => {
+                selectedDistro = null;
+                selectedApps.clear();
+
+                distroSelectionEl.classList.remove('hidden');
+                softwareSelectionEl.classList.add('hidden');
+                commandOutputAreaEl.classList.add('hidden');
+                changeDistroBtn.classList.add('hidden');
+            };
+
+            // --- EVENT LISTENERS ---
+            distroSelectionEl.addEventListener('click', (e) => {
+                if (e.target.tagName === 'BUTTON') {
+                    handleDistroSelect(e.target.dataset.distro);
+                }
+            });
+
+            changeDistroBtn.addEventListener('click', resetToDistroSelection);
+
+            softwareGridEl.addEventListener('change', (e) => {
+                if (e.target.type === 'checkbox') {
+                    if (e.target.checked) {
+                        selectedApps.add(e.target.value);
+                    } else {
+                        selectedApps.delete(e.target.value);
+                    }
+                    updateCommand();
+                }
+            });
+
+            copyBtn.addEventListener('click', () => {
+                const commandText = commandDisplayEl.textContent;
+                copyBuffer.value = commandText;
+                copyBuffer.select();
+                try {
+                    document.execCommand('copy');
+                    copyBtn.textContent = '[COPIED!]';
+                    setTimeout(() => {
+                        copyBtn.textContent = '[COPY COMMAND]';
+                    }, 1500);
+                } catch (err) {
+                    console.error('FAILED TO COPY:', err);
+                    copyBtn.textContent = '[ERROR]';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
