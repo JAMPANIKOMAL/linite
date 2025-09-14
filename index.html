@@ -93,59 +93,57 @@
         </header>
 
         <main class="mt-8">
-            <!-- DISTRO SELECTION -->
-            <div id="distro-selection" class="brutalist-border p-4 md:p-6">
-                <h2 class="text-xl font-bold mb-6 uppercase">[1] CHOOSE YOUR SYSTEM</h2>
-                <div id="distro-families-container" class="flex flex-col gap-6">
-                    <!-- Distro families will be populated by JS -->
+            <!-- STEP 1 & 2: SYSTEM SELECTION -->
+            <div id="distro-selection-view">
+                <div id="family-selection-box" class="brutalist-border p-4 md:p-6">
+                    <h2 class="text-xl font-bold mb-4 uppercase">[1] CHOOSE DISTRO FAMILY</h2>
+                    <div id="family-buttons" class="flex flex-wrap gap-4">
+                        <!-- Family buttons populated by JS -->
+                    </div>
+                </div>
+
+                <div id="distribution-selection-box" class="brutalist-border p-4 md:p-6 mt-8" style="display: none;">
+                    <h2 class="text-xl font-bold mb-4 uppercase">[2] CHOOSE DISTRIBUTION</h2>
+                    <div id="distribution-buttons" class="flex flex-wrap gap-4">
+                        <!-- Distribution buttons populated by JS -->
+                    </div>
                 </div>
             </div>
 
-            <!-- This container will be hidden initially -->
+            <!-- STEP 3+: APP SELECTION VIEW -->
             <div id="app-selection-view" style="display: none;">
+                 <div class="flex justify-end mb-4">
+                     <button id="change-distro-button" class="brutalist-button text-sm">[&lt; CHANGE SYSTEM]</button>
+                 </div>
                 <!-- PRESET SELECTION -->
-                <div id="preset-selection" class="brutalist-border p-4 md:p-6 mt-8">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-xl font-bold uppercase">[2] CHOOSE A PRESET (OPTIONAL)</h2>
-                        <button id="change-distro-button" class="brutalist-button text-sm">[&lt; CHANGE SYSTEM]</button>
-                    </div>
-                    <div id="preset-buttons" class="flex flex-wrap gap-4">
-                        <p class="text-gray-400">SELECT A DISTRIBUTION FIRST...</p>
-                    </div>
+                <div id="preset-selection" class="brutalist-border p-4 md:p-6">
+                    <h2 class="text-xl font-bold uppercase mb-4">[3] CHOOSE A PRESET (OPTIONAL)</h2>
+                    <div id="preset-buttons" class="flex flex-wrap gap-4"></div>
                 </div>
 
                 <!-- SOFTWARE SELECTION -->
                 <div id="software-container" class="brutalist-border p-4 md:p-6 mt-8">
-                    <h2 class="text-xl font-bold mb-4 uppercase">[3] SELECT SOFTWARE</h2>
-                    <div id="software-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-8">
-                        <!-- Categories and apps will be populated by JS -->
-                         <p id="loading-placeholder" class="col-span-full">SELECT A DISTRIBUTION TO BEGIN...</p>
-                    </div>
+                    <h2 class="text-xl font-bold mb-4 uppercase">[4] SELECT SOFTWARE</h2>
+                    <div id="software-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-8"></div>
                 </div>
 
                 <!-- COMMAND OUTPUT -->
                 <div class="brutalist-border p-4 md:p-6 mt-8">
-                    <h2 class="text-xl font-bold mb-4 uppercase">[4] GENERATE COMMAND</h2>
-                    
-                    <!-- OPTIONS -->
+                    <h2 class="text-xl font-bold mb-4 uppercase">[5] GENERATE COMMAND</h2>
                     <div id="command-options" class="flex flex-wrap gap-x-6 gap-y-4 mb-4">
                          <label class="brutalist-checkbox-label">
                             <input type="checkbox" id="option-sudo" checked>
-                            <span class="checkbox-box">[X]</span>
-                            <span>USE SUDO</span>
+                            <span class="checkbox-box">[X]</span><span>USE SUDO</span>
                         </label>
                         <label class="brutalist-checkbox-label">
                             <input type="checkbox" id="option-update" checked>
-                            <span class="checkbox-box">[X]</span>
-                            <span>UPDATE REPOS</span>
+                            <span class="checkbox-box">[X]</span><span>UPDATE REPOS</span>
                         </label>
                         <label class="brutalist-checkbox-label">
                             <input type="checkbox" id="option-confirm" checked>
-                            <span class="checkbox-box">[X]</span>
-                            <span>AUTO-CONFIRM</span>
+                            <span class="checkbox-box">[X]</span><span>AUTO-CONFIRM</span>
                         </label>
                     </div>
-
                     <div class="relative">
                         <textarea id="command-output" rows="4" class="w-full brutalist-border focus-outline-none" readonly></textarea>
                         <button id="copy-button" class="brutalist-button absolute bottom-3 right-3 text-sm">[COPY]</button>
@@ -160,46 +158,23 @@
         document.addEventListener('DOMContentLoaded', () => {
             // --- DATA & CONFIGURATION ---
             const distributions = {
-                debian: {
-                    family: 'Debian',
-                    variants: ['Debian', 'Ubuntu', 'Kali', 'Parrot OS'],
-                    dataFile: 'debian.json',
-                    manager: 'apt-get',
-                    updateCmd: 'update',
-                    installCmd: 'install',
-                    confirmFlag: '-y'
-                },
-                fedora: {
-                    family: 'Fedora',
-                    variants: ['Fedora', 'CentOS', 'Rocky Linux'],
-                    dataFile: 'fedora.json',
-                    manager: 'dnf',
-                    updateCmd: 'check-update',
-                    installCmd: 'install',
-                    confirmFlag: '-y'
-                },
-                arch: {
-                    family: 'Arch',
-                    variants: ['Arch', 'Manjaro', 'EndeavourOS'],
-                    dataFile: 'arch.json',
-                    manager: 'pacman',
-                    updateCmd: '-Syu',
-                    installCmd: '-S',
-                    confirmFlag: '--noconfirm'
-                }
+                debian: { family: 'Debian', variants: ['Debian', 'Ubuntu', 'Kali', 'Parrot OS'], dataFile: 'debian.json', manager: 'apt-get', updateCmd: 'update', installCmd: 'install', confirmFlag: '-y' },
+                fedora: { family: 'Fedora', variants: ['Fedora', 'CentOS', 'Rocky Linux'], dataFile: 'fedora.json', manager: 'dnf', updateCmd: 'check-update', installCmd: 'install', confirmFlag: '-y' },
+                arch: { family: 'Arch', variants: ['Arch', 'Manjaro', 'EndeavourOS'], dataFile: 'arch.json', manager: 'pacman', updateCmd: '-Syu', installCmd: '-S', confirmFlag: '--noconfirm' }
             };
 
             // --- APPLICATION STATE ---
             const appState = {
-                globalSoftwareList: [],
-                presetsList: [],
-                distroPackageMap: {},
-                selectedDistroKey: null,
-                selectedApps: new Set(),
+                globalSoftwareList: [], presetsList: [], distroPackageMap: {},
+                selectedFamilyKey: null, selectedDistroKey: null, selectedApps: new Set(),
             };
 
             // --- DOM ELEMENTS ---
-            const distroFamiliesContainer = document.getElementById('distro-families-container');
+            const distroSelectionView = document.getElementById('distro-selection-view');
+            const familySelectionBox = document.getElementById('family-selection-box');
+            const familyButtonsContainer = document.getElementById('family-buttons');
+            const distributionSelectionBox = document.getElementById('distribution-selection-box');
+            const distributionButtonsContainer = document.getElementById('distribution-buttons');
             const appSelectionView = document.getElementById('app-selection-view');
             const changeDistroButton = document.getElementById('change-distro-button');
             const presetContainer = document.getElementById('preset-buttons');
@@ -207,7 +182,6 @@
             const commandOutput = document.getElementById('command-output');
             const copyButton = document.getElementById('copy-button');
             const copyFeedback = document.getElementById('copy-feedback');
-            const loadingPlaceholder = document.getElementById('loading-placeholder');
             const optionSudo = document.getElementById('option-sudo');
             const optionUpdate = document.getElementById('option-update');
             const optionConfirm = document.getElementById('option-confirm');
@@ -216,61 +190,62 @@
             async function init() {
                 try {
                     const [swResponse, presetsResponse] = await Promise.all([
-                        fetch('data/global.json'),
-                        fetch('data/presets.json')
+                        fetch('data/global.json'), fetch('data/presets.json')
                     ]);
-
-                    if (!swResponse.ok) throw new Error(`HTTP error! status: ${swResponse.status} for global.json`);
-                    if (!presetsResponse.ok) throw new Error(`HTTP error! status: ${presetsResponse.status} for presets.json`);
+                    if (!swResponse.ok) throw new Error(`Failed to load global.json`);
+                    if (!presetsResponse.ok) throw new Error(`Failed to load presets.json`);
 
                     appState.globalSoftwareList = await swResponse.json();
                     appState.presetsList = await presetsResponse.json();
                     
-                    renderDistroSelection();
-                    addOptionListeners();
-                    copyButton.addEventListener('click', copyCommandToClipboard);
-                    changeDistroButton.addEventListener('click', showDistroSelectionView);
+                    renderFamilySelection();
+                    addEventListeners();
                 } catch (error) {
-                    console.error("Failed to load initial data:", error);
-                    softwareGrid.innerHTML = '<p class="text-red-500 col-span-full">ERROR: Could not load core application data. Please check the console.</p>';
+                    console.error("Initialization failed:", error);
+                    familySelectionBox.innerHTML = '<p class="text-red-500">ERROR: Could not load core application data.</p>';
                 }
+            }
+            
+            function addEventListeners() {
+                addOptionListeners();
+                copyButton.addEventListener('click', copyCommandToClipboard);
+                changeDistroButton.addEventListener('click', showDistroSelectionView);
             }
 
             // --- RENDERING ---
-            function renderDistroSelection() {
-                distroFamiliesContainer.innerHTML = '';
-                for (const key in distributions) {
-                    const distro = distributions[key];
-                    
-                    const familyContainer = document.createElement('div');
-                    
-                    const familyTitle = document.createElement('h3');
-                    familyTitle.className = 'text-lg font-bold uppercase mb-3';
-                    familyTitle.textContent = `// [DISTRO FAMILY: ${distro.family}]`;
-                    familyContainer.appendChild(familyTitle);
+            function renderFamilySelection() {
+                familyButtonsContainer.innerHTML = '';
+                Object.keys(distributions).forEach(key => {
+                    const button = document.createElement('button');
+                    button.className = 'brutalist-button';
+                    button.textContent = distributions[key].family;
+                    button.dataset.familyKey = key;
+                    button.addEventListener('click', () => handleFamilySelect(key, button));
+                    familyButtonsContainer.appendChild(button);
+                });
+            }
 
-                    const buttonGroup = document.createElement('div');
-                    buttonGroup.className = 'flex flex-wrap gap-4';
-                    distro.variants.forEach(variant => {
-                        const button = document.createElement('button');
-                        button.className = 'brutalist-button';
-                        button.textContent = variant; // This is the specific distribution name
-                        button.dataset.distroKey = key; // This is the family key
-                        button.addEventListener('click', () => handleDistroSelect(key, button));
-                        buttonGroup.appendChild(button);
-                    });
-                    familyContainer.appendChild(buttonGroup);
-                    distroFamiliesContainer.appendChild(familyContainer);
-                }
+            function renderDistributionSelection(familyKey) {
+                distributionButtonsContainer.innerHTML = '';
+                const family = distributions[familyKey];
+                family.variants.forEach(variant => {
+                    const button = document.createElement('button');
+                    button.className = 'brutalist-button';
+                    button.textContent = variant;
+                    button.dataset.distroKey = familyKey; // The key is the family key
+                    button.addEventListener('click', () => handleDistroSelect(familyKey, button));
+                    distributionButtonsContainer.appendChild(button);
+                });
+                distributionSelectionBox.style.display = 'block';
+            }
+            
+            async function renderAppView() {
+                renderPresetButtons();
+                await renderSoftwareGrid();
             }
             
             function renderPresetButtons() {
                 presetContainer.innerHTML = '';
-                if (!appState.selectedDistroKey) {
-                    presetContainer.innerHTML = '<p class="text-gray-400">SELECT A DISTRIBUTION FIRST...</p>';
-                    return;
-                }
-
                 appState.presetsList.forEach(preset => {
                     const button = document.createElement('button');
                     button.className = 'brutalist-button';
@@ -282,14 +257,9 @@
             }
 
             async function renderSoftwareGrid() {
-                if (loadingPlaceholder) loadingPlaceholder.remove();
-                softwareGrid.innerHTML = ''; // Clear existing grid
-
-                if (!appState.globalSoftwareList.length) return;
-
+                softwareGrid.innerHTML = '';
                 appState.globalSoftwareList.forEach(category => {
                     const categoryContainer = document.createElement('div');
-                    
                     const categoryTitle = document.createElement('h3');
                     categoryTitle.className = 'text-lg font-bold uppercase mb-2';
                     categoryTitle.textContent = `// ${category.category}`;
@@ -300,12 +270,9 @@
                     
                     category.apps.forEach(app => {
                         const isAvailable = appState.distroPackageMap[app.id] !== null;
-                        
                         const label = document.createElement('label');
                         label.className = 'brutalist-checkbox-label';
-                        if (!isAvailable) {
-                            label.classList.add('disabled');
-                        }
+                        if (!isAvailable) label.classList.add('disabled');
 
                         const checkbox = document.createElement('input');
                         checkbox.type = 'checkbox';
@@ -317,13 +284,11 @@
                         const checkboxBox = document.createElement('span');
                         checkboxBox.className = 'checkbox-box';
                         checkboxBox.innerHTML = checkbox.checked ? 'X' : '&nbsp;';
-
+                        
                         const appName = document.createElement('span');
                         appName.textContent = app.name;
 
-                        label.appendChild(checkbox);
-                        label.appendChild(checkboxBox);
-                        label.appendChild(appName);
+                        label.append(checkbox, checkboxBox, appName);
                         applist.appendChild(label);
                     });
                     
@@ -331,7 +296,6 @@
                     softwareGrid.appendChild(categoryContainer);
                 });
                 
-                // Add event listeners for the visual checkmark
                 document.querySelectorAll('.brutalist-checkbox-label input').forEach(box => {
                     box.addEventListener('change', e => {
                        e.target.nextElementSibling.innerHTML = e.target.checked ? 'X' : '&nbsp;';
@@ -339,30 +303,30 @@
                 });
             }
 
-
             // --- EVENT HANDLERS ---
+            function handleFamilySelect(familyKey, clickedButton) {
+                appState.selectedFamilyKey = familyKey;
+                document.querySelectorAll('#family-buttons button').forEach(btn => btn.classList.remove('active'));
+                clickedButton.classList.add('active');
+                renderDistributionSelection(familyKey);
+            }
+
             async function handleDistroSelect(distroKey, clickedButton) {
                 appState.selectedDistroKey = distroKey;
                 
                 // --- VIEW CHANGE ---
-                document.getElementById('distro-selection').style.display = 'none';
+                distroSelectionView.style.display = 'none';
                 appSelectionView.style.display = 'block';
-
-                // Update active button style
-                document.querySelectorAll('#distro-selection button').forEach(btn => btn.classList.remove('active'));
-                clickedButton.classList.add('active');
 
                 try {
                     const response = await fetch(`data/${distributions[distroKey].dataFile}`);
-                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    if (!response.ok) throw new Error(`HTTP error loading data file`);
                     appState.distroPackageMap = await response.json();
                     
-                    // Filter selectedApps to only include ones available in the new distro
                     const availableApps = new Set(Object.keys(appState.distroPackageMap).filter(id => appState.distroPackageMap[id]));
                     appState.selectedApps = new Set([...appState.selectedApps].filter(id => availableApps.has(id)));
 
-                    await renderSoftwareGrid();
-                    renderPresetButtons();
+                    await renderAppView();
                     updateCommand();
                 } catch (error) {
                     console.error(`Failed to load data for ${distroKey}:`, error);
@@ -371,39 +335,30 @@
             }
 
             function handleAppSelect(appId, isSelected) {
-                if (isSelected) {
-                    appState.selectedApps.add(appId);
-                } else {
-                    appState.selectedApps.delete(appId);
-                }
+                isSelected ? appState.selectedApps.add(appId) : appState.selectedApps.delete(appId);
                 updateCommand();
             }
 
             function handlePresetSelect(appIds) {
-                if (!appState.selectedDistroKey) return;
-                
                 appState.selectedApps.clear();
                 const availableApps = new Set(Object.keys(appState.distroPackageMap).filter(id => appState.distroPackageMap[id]));
-
                 appIds.forEach(appId => {
-                    if (availableApps.has(appId)) {
-                        appState.selectedApps.add(appId);
-                    }
+                    if (availableApps.has(appId)) appState.selectedApps.add(appId);
                 });
-
-                renderSoftwareGrid(); // Re-render to show new selections
+                renderSoftwareGrid();
                 updateCommand();
             }
 
             function showDistroSelectionView() {
                 appSelectionView.style.display = 'none';
-                document.getElementById('distro-selection').style.display = 'block';
+                distroSelectionView.style.display = 'block';
+                distributionSelectionBox.style.display = 'none';
+                document.querySelectorAll('#family-buttons button').forEach(btn => btn.classList.remove('active'));
             }
             
             function addOptionListeners() {
                 [optionSudo, optionUpdate, optionConfirm].forEach(opt => {
                      opt.addEventListener('change', () => {
-                        // For visual checkmark
                         opt.nextElementSibling.innerHTML = opt.checked ? '[X]' : '[&nbsp;]';
                         updateCommand();
                      });
@@ -416,50 +371,29 @@
                     commandOutput.value = '';
                     return;
                 }
-
                 const distro = distributions[appState.selectedDistroKey];
                 let commandParts = [];
-
-                if (optionSudo.checked) {
-                    commandParts.push('sudo');
-                }
-
+                if (optionSudo.checked) commandParts.push('sudo');
                 commandParts.push(distro.manager);
-
                 if (optionUpdate.checked) {
                     commandParts.push(distro.updateCmd);
                     if (distro.manager === 'apt-get') commandParts.push('&&');
                 }
-                
-                // Re-add sudo for the install part if needed for apt-get
                 if (distro.manager === 'apt-get' && optionSudo.checked && optionUpdate.checked) {
-                    commandParts.push('sudo');
-                    commandParts.push(distro.manager);
+                    commandParts.push('sudo', distro.manager);
                 }
-
                 commandParts.push(distro.installCmd);
-
-                if (optionConfirm.checked) {
-                    commandParts.push(distro.confirmFlag);
-                }
-                
-                const packages = [...appState.selectedApps]
-                    .map(id => appState.distroPackageMap[id])
-                    .filter(Boolean); // Filter out any nulls just in case
-
+                if (optionConfirm.checked) commandParts.push(distro.confirmFlag);
+                const packages = [...appState.selectedApps].map(id => appState.distroPackageMap[id]).filter(Boolean);
                 commandOutput.value = commandParts.concat(packages).join(' ');
             }
             
             function copyCommandToClipboard() {
                 if (!commandOutput.value) return;
-                
                 commandOutput.select();
                 document.execCommand('copy');
-                
                 copyFeedback.textContent = 'COPIED!';
-                setTimeout(() => {
-                    copyFeedback.textContent = '';
-                }, 1500);
+                setTimeout(() => { copyFeedback.textContent = ''; }, 1500);
             }
 
             // --- RUN ---
