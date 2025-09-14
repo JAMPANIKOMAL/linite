@@ -95,7 +95,7 @@
         <main class="mt-8">
             <!-- DISTRO SELECTION -->
             <div id="distro-selection" class="brutalist-border p-4 md:p-6">
-                <h2 class="text-xl font-bold mb-6 uppercase">[1] SELECT DISTRIBUTION</h2>
+                <h2 class="text-xl font-bold mb-6 uppercase">[1] CHOOSE YOUR SYSTEM</h2>
                 <div id="distro-families-container" class="flex flex-col gap-6">
                     <!-- Distro families will be populated by JS -->
                 </div>
@@ -107,7 +107,7 @@
                 <div id="preset-selection" class="brutalist-border p-4 md:p-6 mt-8">
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="text-xl font-bold uppercase">[2] CHOOSE A PRESET (OPTIONAL)</h2>
-                        <button id="change-distro-button" class="brutalist-button text-sm">[&lt; CHANGE]</button>
+                        <button id="change-distro-button" class="brutalist-button text-sm">[&lt; CHANGE SYSTEM]</button>
                     </div>
                     <div id="preset-buttons" class="flex flex-wrap gap-4">
                         <p class="text-gray-400">SELECT A DISTRIBUTION FIRST...</p>
@@ -246,7 +246,7 @@
                     
                     const familyTitle = document.createElement('h3');
                     familyTitle.className = 'text-lg font-bold uppercase mb-3';
-                    familyTitle.textContent = `// ${distro.family} Family`;
+                    familyTitle.textContent = `// [DISTRO FAMILY: ${distro.family}]`;
                     familyContainer.appendChild(familyTitle);
 
                     const buttonGroup = document.createElement('div');
@@ -254,8 +254,8 @@
                     distro.variants.forEach(variant => {
                         const button = document.createElement('button');
                         button.className = 'brutalist-button';
-                        button.textContent = variant;
-                        button.dataset.distroKey = key;
+                        button.textContent = variant; // This is the specific distribution name
+                        button.dataset.distroKey = key; // This is the family key
                         button.addEventListener('click', () => handleDistroSelect(key, button));
                         buttonGroup.appendChild(button);
                     });
