@@ -1,0 +1,22 @@
+[
+  {
+    "name": "Web Developer",
+    "description": "Essential tools for front-end and back-end development.",
+    "apps": ["git", "vscode", "docker", "neovim"]
+  },
+  {
+    "name": "Graphic Design",
+    "description": "A suite of tools for raster and vector graphics, and 3D modeling.",
+    "apps": ["gimp", "inkscape", "blender"]
+  },
+  {
+    "name": "Security & Pentesting",
+    "description": "Common tools for security analysis. (Note: Distro-specific tools not included).",
+    "apps": ["git", "neovim", "docker", "zsh"]
+  },
+  {
+    "name": "General Workstation",
+    "description": "A standard set of utilities for a new Linux installation.",
+    "apps": ["firefox", "thunderbird", "vlc", "htop", "timeshift"]
+  }
+]
