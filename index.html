@@ -81,6 +81,18 @@
         .brutalist-shadow {
              box-shadow: 8px 8px 0px #FFF;
         }
+        .brutalist-tooltip {
+            position: absolute;
+            display: none;
+            background-color: #000;
+            color: #FFF;
+            border: 2px solid #FFF;
+            padding: 8px 12px;
+            z-index: 100;
+            pointer-events: none; /* Important */
+            max-width: 250px;
+            text-align: center;
+        }
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -144,15 +156,15 @@
                 <div class="brutalist-border p-4 md:p-6 mt-8">
                     <h2 class="text-xl font-bold uppercase">GENERATE COMMAND</h2>
                     <div id="command-options" class="flex flex-wrap gap-x-6 gap-y-4 my-4">
-                         <label class="brutalist-checkbox-label" title="Prefixes the command with 'sudo' to run it with administrative privileges, which is usually required for installing software.">
+                         <label class="brutalist-checkbox-label" data-tooltip="Prefixes the command with 'sudo' to run it with administrative privileges, which is usually required for installing software.">
                             <input type="checkbox" id="option-sudo">
                             <span class="checkbox-box">[&nbsp;]</span><span>RUN AS ADMIN (SUDO)</span>
                         </label>
-                        <label class="brutalist-checkbox-label" title="Updates your system's list of available software packages before installing. Recommended to ensure you get the latest versions.">
+                        <label class="brutalist-checkbox-label" data-tooltip="Updates your system's list of available software packages before installing. Recommended to ensure you get the latest versions.">
                             <input type="checkbox" id="option-update">
                             <span class="checkbox-box">[&nbsp;]</span><span>SYNC PACKAGES</span>
                         </label>
-                        <label class="brutalist-checkbox-label" title="Automatically answers 'yes' to any confirmation prompts during installation. Useful for unattended scripting.">
+                        <label class="brutalist-checkbox-label" data-tooltip="Automatically answers 'yes' to any confirmation prompts during installation. Useful for unattended scripting.">
                             <input type="checkbox" id="option-confirm">
                             <span class="checkbox-box">[&nbsp;]</span><span>SKIP PROMPTS</span>
                         </label>
@@ -166,6 +178,8 @@
             </div>
         </main>
     </div>
+    
+    <div id="custom-tooltip" class="brutalist-tooltip"></div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -198,6 +212,7 @@
             const optionSudo = document.getElementById('option-sudo');
             const optionUpdate = document.getElementById('option-update');
             const optionConfirm = document.getElementById('option-confirm');
+            const customTooltip = document.getElementById('custom-tooltip');
 
             // --- INITIALIZATION ---
             async function init() {
@@ -214,6 +229,7 @@
                     renderFamilySelection();
                     renderDistributionSelection();
                     addEventListeners();
+                    initializeTooltips();
                 } catch (error) {
                     console.error("Initialization failed:", error);
                     familyButtonsContainer.innerHTML = '<p class="text-red-500">ERROR: Could not load core application data.</p>';
@@ -234,7 +250,6 @@
                     button.className = 'brutalist-button';
                     const family = distributions[key];
                     button.textContent = family.family;
-                    // Clicking a family is a shortcut for selecting the base distribution of that family
                     button.addEventListener('click', () => handleDistroSelect(key, family.family));
                     familyButtonsContainer.appendChild(button);
                 });
@@ -266,13 +281,14 @@
                     const button = document.createElement('button');
                     button.className = 'brutalist-button';
                     button.textContent = preset.name;
-                    button.title = preset.description;
+                    button.dataset.tooltip = preset.description; // Using data-tooltip for custom tooltips
                     if (appState.activePresetName === preset.name) {
                         button.classList.add('active');
                     }
                     button.addEventListener('click', () => handlePresetSelect(preset.name, preset.apps));
                     presetContainer.appendChild(button);
                 });
+                initializeTooltips(); // Re-initialize tooltips for new buttons
             }
 
             async function renderSoftwareGrid() {
@@ -325,7 +341,7 @@
             // --- EVENT HANDLERS ---
             async function handleDistroSelect(distroKey, distroName) {
                 appState.selectedDistroKey = distroKey;
-                appState.activePresetName = null; // Reset preset on distro change
+                appState.activePresetName = null;
                 
                 distroSelectionView.style.display = 'none';
                 appSelectionView.style.display = 'block';
@@ -354,23 +370,18 @@
             }
 
             function handlePresetSelect(presetName, appIds) {
-                // If the clicked preset is already active, deselect it.
                 if (appState.activePresetName === presetName) {
                     appState.activePresetName = null;
                     appState.selectedApps.clear();
                 } else {
-                    // Otherwise, select the new preset.
                     appState.activePresetName = presetName;
                     appState.selectedApps.clear();
                     const availableApps = new Set(Object.keys(appState.distroPackageMap).filter(id => appState.distroPackageMap[id]));
                     appIds.forEach(appId => {
-                        if (availableApps.has(appId)) {
-                            appState.selectedApps.add(appId);
-                        }
+                        if (availableApps.has(appId)) appState.selectedApps.add(appId);
                     });
                 }
                 
-                // Rerender both the presets and the grid to reflect changes
                 renderPresetButtons(); 
                 renderSoftwareGrid();
                 updateCommand();
@@ -383,7 +394,6 @@
             
             function addOptionListeners() {
                 [optionSudo, optionUpdate, optionConfirm].forEach(opt => {
-                     // Set initial state based on unchecked default
                      opt.nextElementSibling.innerHTML = opt.checked ? '[X]' : '[&nbsp;]';
                      opt.addEventListener('change', () => {
                         opt.nextElementSibling.innerHTML = opt.checked ? '[X]' : '[&nbsp;]';
@@ -418,32 +428,40 @@
             }
 
             function updateCommand() {
-                if (!appState.selectedDistroKey || appState.selectedApps.size === 0) {
+                if (!appState.selectedDistroKey) {
+                     commandOutput.value = appState.selectedApps.size > 0 ? 'Select a distribution to generate a command.' : '';
+                     return;
+                }
+                if (appState.selectedApps.size === 0) {
                     commandOutput.value = ''; return;
                 }
+
                 const distro = distributions[appState.selectedDistroKey];
                 let commandParts = [];
-                if (optionSudo.checked) commandParts.push('sudo');
-                commandParts.push(distro.manager);
-                if (optionUpdate.checked) {
-                    commandParts.push(distro.updateCmd);
-                    if (distro.manager === 'apt-get') commandParts.push('&&');
-                }
-                // This logic needs to handle the case where update is checked but sudo is not.
-                if (distro.manager === 'apt-get' && optionUpdate.checked) {
-                    if(optionSudo.checked) commandParts.push('sudo');
-                    commandParts.push(distro.manager);
-                } else if (distro.manager !== 'apt-get' || !optionUpdate.checked) {
-                    // For other managers, or if update is not selected, this part is not needed in the same way.
+                let baseCommand = [distro.manager];
+
+                if(optionUpdate.checked) {
+                    let updatePart = `${distro.manager} ${distro.updateCmd}`;
+                    if(optionSudo.checked) updatePart = `sudo ${updatePart}`;
+                    commandParts.push(updatePart, '&&');
                 }
 
-                if (distro.manager === 'apt-get' && optionSudo.checked && optionUpdate.checked) {
-                    commandParts.push('sudo', distro.manager);
-                }
-                commandParts.push(distro.installCmd);
-                if (optionConfirm.checked) commandParts.push(distro.confirmFlag);
+                let installPart = `${distro.installCmd}`;
                 const packages = [...appState.selectedApps].map(id => appState.distroPackageMap[id]).filter(Boolean);
-                commandOutput.value = commandParts.concat(packages).join(' ');
+                let installCommand = [distro.manager, installPart, ...packages];
+                if(optionConfirm.checked) {
+                    // find position of install command to insert flag
+                    const installCmdIndex = installCommand.indexOf(distro.installCmd);
+                    installCommand.splice(installCmdIndex + 1, 0, distro.confirmFlag);
+                }
+                
+                if (optionSudo.checked) {
+                     commandParts.push('sudo');
+                }
+                 commandParts.push(...installCommand);
+
+
+                commandOutput.value = commandParts.join(' ');
             }
             
             function copyCommandToClipboard() {
@@ -454,12 +472,28 @@
                 setTimeout(() => { copyFeedback.textContent = ''; }, 1500);
             }
 
+            function initializeTooltips() {
+                const tooltipElements = document.querySelectorAll('[data-tooltip]');
+                tooltipElements.forEach(el => {
+                    el.addEventListener('mouseenter', (e) => {
+                        customTooltip.textContent = el.dataset.tooltip;
+                        customTooltip.style.display = 'block';
+                    });
+                     el.addEventListener('mousemove', (e) => {
+                        // Position tooltip above the cursor
+                        customTooltip.style.left = `${e.pageX - customTooltip.offsetWidth / 2}px`;
+                        customTooltip.style.top = `${e.pageY - customTooltip.offsetHeight - 10}px`;
+                    });
+                    el.addEventListener('mouseleave', () => {
+                        customTooltip.style.display = 'none';
+                    });
+                });
+            }
+
             // --- RUN ---
             init();
         });
     </script>
 </body>
 </html>
-
-
 
