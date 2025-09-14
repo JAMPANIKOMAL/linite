@@ -492,23 +492,11 @@
                 complexPackages.forEach(id => {
                     const complexInstall = appState.complexInstallMap[id];
                     if (complexInstall && complexInstall.commands) {
-                        allCommands.push(`\n# Installing ${complexInstall.name}`);
                         allCommands.push(...complexInstall.commands);
                     }
                 });
 
-                // Join commands properly
-                if (allCommands.length > 0) {
-                    // Check if we have any complex installations (multi-line)
-                    const hasComplexInstalls = complexPackages.length > 0;
-                    if (hasComplexInstalls) {
-                        commandOutput.value = allCommands.join('\n');
-                    } else {
-                        commandOutput.value = allCommands.join(' && ');
-                    }
-                } else {
-                    commandOutput.value = '';
-                }
+                commandOutput.value = allCommands.join(' && ');
             }
             
             function copyCommandToClipboard() {
