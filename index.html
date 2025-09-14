@@ -93,8 +93,18 @@
         </header>
 
         <main class="mt-8">
-            <!-- STEP 1 & 2: SYSTEM SELECTION -->
+            <!-- SYSTEM SELECTION VIEW -->
             <div id="distro-selection-view">
+                <!-- INSTRUCTIONAL NOTE -->
+                <div class="brutalist-border p-4 md:p-6 mb-8">
+                    <h2 class="text-xl font-bold uppercase mb-2">// HOW TO USE</h2>
+                    <p>
+                        Generate a one-line command to install your favorite software.
+                        <br>
+                        Start by selecting your Linux distribution below to continue.
+                    </p>
+                </div>
+                
                 <div id="family-selection-box" class="brutalist-border p-4 md:p-6">
                     <h2 class="text-xl font-bold mb-4 uppercase">CHOOSE DISTRO FAMILY</h2>
                     <div id="family-buttons" class="flex flex-wrap gap-4">
@@ -102,7 +112,9 @@
                     </div>
                 </div>
 
-                <div id="distribution-selection-box" class="brutalist-border p-4 md:p-6 mt-8">
+                <div class="text-center my-4 font-bold text-xl">// OR</div>
+
+                <div id="distribution-selection-box" class="brutalist-border p-4 md:p-6">
                     <h2 class="text-xl font-bold mb-4 uppercase">CHOOSE DISTRIBUTION</h2>
                     <div id="distribution-buttons" class="flex flex-wrap gap-4">
                         <!-- Distribution buttons populated by JS -->
@@ -124,14 +136,14 @@
 
                 <!-- SOFTWARE SELECTION -->
                 <div id="software-container" class="brutalist-border p-4 md:p-6 mt-8">
-                    <h2 class="text-xl font-bold mb-4 uppercase">SELECT SOFTWARE</h2>
-                    <div id="software-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-8"></div>
+                    <h2 class="text-xl font-bold uppercase">SELECT SOFTWARE</h2>
+                    <div id="software-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-8 mt-4"></div>
                 </div>
 
                 <!-- COMMAND OUTPUT -->
                 <div class="brutalist-border p-4 md:p-6 mt-8">
-                    <h2 class="text-xl font-bold mb-4 uppercase">GENERATE COMMAND</h2>
-                    <div id="command-options" class="flex flex-wrap gap-x-6 gap-y-4 mb-4">
+                    <h2 class="text-xl font-bold uppercase">GENERATE COMMAND</h2>
+                    <div id="command-options" class="flex flex-wrap gap-x-6 gap-y-4 my-4">
                          <label class="brutalist-checkbox-label">
                             <input type="checkbox" id="option-sudo" checked>
                             <span class="checkbox-box">[X]</span><span>USE SUDO</span>
