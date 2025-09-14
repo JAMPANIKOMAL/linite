@@ -33,6 +33,16 @@
       "sudo dnf localinstall -y slack-4.38.125-0.1.el8.x86_64.rpm"
     ]
   },
+  "docker": {
+    "name": "Docker CE",
+    "description": "Docker Community Edition requires adding Docker's official repository",
+    "commands": [
+      "sudo dnf -y install dnf-plugins-core",
+      "sudo dnf config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo",
+      "sudo dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin",
+      "sudo systemctl enable --now docker"
+    ]
+  },
   "spotify": {
     "name": "Spotify",
     "description": "Spotify requires adding Spotify's repository",
