@@ -6,9 +6,6 @@ A fast, minimalist web app for generating batch-install commands for your favori
 
 ---
 
-![Linite Screenshot](https://jampanikomal.github.io/linite/screenshot.png) 
-*Note: You may need to add a screenshot named `screenshot.png` to your repository for the image above to display.*
-
 Linite streamlines the process of setting up a new Linux machine. Instead of installing applications one by one, you can select everything you need from a curated list, and Linite will generate a single, ready-to-paste command for your specific distribution.
 
 ## Features
