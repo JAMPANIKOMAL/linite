@@ -96,13 +96,13 @@
             <!-- STEP 1 & 2: SYSTEM SELECTION -->
             <div id="distro-selection-view">
                 <div id="family-selection-box" class="brutalist-border p-4 md:p-6">
-                    <h2 class="text-xl font-bold mb-4 uppercase">[1] CHOOSE DISTRO FAMILY</h2>
+                    <h2 class="text-xl font-bold mb-4 uppercase">[1] CHOOSE DISTRO FAMILY (ADVANCED)</h2>
                     <div id="family-buttons" class="flex flex-wrap gap-4">
                         <!-- Family buttons populated by JS -->
                     </div>
                 </div>
 
-                <div id="distribution-selection-box" class="brutalist-border p-4 md:p-6 mt-8" style="display: none;">
+                <div id="distribution-selection-box" class="brutalist-border p-4 md:p-6 mt-8">
                     <h2 class="text-xl font-bold mb-4 uppercase">[2] CHOOSE DISTRIBUTION</h2>
                     <div id="distribution-buttons" class="flex flex-wrap gap-4">
                         <!-- Distribution buttons populated by JS -->
@@ -112,7 +112,8 @@
 
             <!-- STEP 3+: APP SELECTION VIEW -->
             <div id="app-selection-view" style="display: none;">
-                 <div class="flex justify-end mb-4">
+                 <div class="flex justify-between items-center mb-4">
+                     <p id="selected-distro-display" class="font-bold text-lg"></p>
                      <button id="change-distro-button" class="brutalist-button text-sm">[&lt; CHANGE SYSTEM]</button>
                  </div>
                 <!-- PRESET SELECTION -->
@@ -166,17 +167,16 @@
             // --- APPLICATION STATE ---
             const appState = {
                 globalSoftwareList: [], presetsList: [], distroPackageMap: {},
-                selectedFamilyKey: null, selectedDistroKey: null, selectedApps: new Set(),
+                selectedDistroKey: null, selectedApps: new Set(),
             };
 
             // --- DOM ELEMENTS ---
             const distroSelectionView = document.getElementById('distro-selection-view');
-            const familySelectionBox = document.getElementById('family-selection-box');
             const familyButtonsContainer = document.getElementById('family-buttons');
-            const distributionSelectionBox = document.getElementById('distribution-selection-box');
             const distributionButtonsContainer = document.getElementById('distribution-buttons');
             const appSelectionView = document.getElementById('app-selection-view');
             const changeDistroButton = document.getElementById('change-distro-button');
+            const selectedDistroDisplay = document.getElementById('selected-distro-display');
             const presetContainer = document.getElementById('preset-buttons');
             const softwareGrid = document.getElementById('software-grid');
             const commandOutput = document.getElementById('command-output');
@@ -199,10 +199,11 @@
                     appState.presetsList = await presetsResponse.json();
                     
                     renderFamilySelection();
+                    renderDistributionSelection(); // Render all initially
                     addEventListeners();
                 } catch (error) {
                     console.error("Initialization failed:", error);
-                    familySelectionBox.innerHTML = '<p class="text-red-500">ERROR: Could not load core application data.</p>';
+                    familyButtonsContainer.innerHTML = '<p class="text-red-500">ERROR: Could not load core application data.</p>';
                 }
             }
             
@@ -215,6 +216,16 @@
             // --- RENDERING ---
             function renderFamilySelection() {
                 familyButtonsContainer.innerHTML = '';
+                 const allButton = document.createElement('button');
+                allButton.className = 'brutalist-button active'; // Active by default
+                allButton.textContent = 'All';
+                allButton.addEventListener('click', () => {
+                    document.querySelectorAll('#family-buttons button').forEach(btn => btn.classList.remove('active'));
+                    allButton.classList.add('active');
+                    renderDistributionSelection(); // Render all distros
+                });
+                familyButtonsContainer.appendChild(allButton);
+
                 Object.keys(distributions).forEach(key => {
                     const button = document.createElement('button');
                     button.className = 'brutalist-button';
@@ -224,21 +235,25 @@
                     familyButtonsContainer.appendChild(button);
                 });
             }
-
-            function renderDistributionSelection(familyKey) {
-                distributionButtonsContainer.innerHTML = '';
-                const family = distributions[familyKey];
-                family.variants.forEach(variant => {
-                    const button = document.createElement('button');
-                    button.className = 'brutalist-button';
-                    button.textContent = variant;
-                    button.dataset.distroKey = familyKey; // The key is the family key
-                    button.addEventListener('click', () => handleDistroSelect(familyKey, button));
-                    distributionButtonsContainer.appendChild(button);
-                });
-                distributionSelectionBox.style.display = 'block';
-            }
             
+            // Can be called with a key to filter, or without to show all
+            function renderDistributionSelection(familyKey = null) {
+                distributionButtonsContainer.innerHTML = '';
+                const keysToRender = familyKey ? [familyKey] : Object.keys(distributions);
+
+                keysToRender.forEach(key => {
+                    const family = distributions[key];
+                    family.variants.forEach(variant => {
+                        const button = document.createElement('button');
+                        button.className = 'brutalist-button';
+                        button.textContent = variant;
+                        button.dataset.distroKey = key;
+                        button.addEventListener('click', () => handleDistroSelect(key, variant));
+                        distributionButtonsContainer.appendChild(button);
+                    });
+                });
+            }
+
             async function renderAppView() {
                 renderPresetButtons();
                 await renderSoftwareGrid();
@@ -305,18 +320,17 @@
 
             // --- EVENT HANDLERS ---
             function handleFamilySelect(familyKey, clickedButton) {
-                appState.selectedFamilyKey = familyKey;
                 document.querySelectorAll('#family-buttons button').forEach(btn => btn.classList.remove('active'));
                 clickedButton.classList.add('active');
                 renderDistributionSelection(familyKey);
             }
 
-            async function handleDistroSelect(distroKey, clickedButton) {
+            async function handleDistroSelect(distroKey, distroName) {
                 appState.selectedDistroKey = distroKey;
                 
-                // --- VIEW CHANGE ---
                 distroSelectionView.style.display = 'none';
                 appSelectionView.style.display = 'block';
+                selectedDistroDisplay.textContent = `SYSTEM: [${distroName}]`;
 
                 try {
                     const response = await fetch(`data/${distributions[distroKey].dataFile}`);
@@ -330,7 +344,7 @@
                     updateCommand();
                 } catch (error) {
                     console.error(`Failed to load data for ${distroKey}:`, error);
-                    softwareGrid.innerHTML = `<p class="text-red-500 col-span-full">ERROR: Could not load package data for ${distributions[distroKey].family}.</p>`;
+                    softwareGrid.innerHTML = `<p class="text-red-500 col-span-full">ERROR: Could not load package data.</p>`;
                 }
             }
 
@@ -352,8 +366,6 @@
             function showDistroSelectionView() {
                 appSelectionView.style.display = 'none';
                 distroSelectionView.style.display = 'block';
-                distributionSelectionBox.style.display = 'none';
-                document.querySelectorAll('#family-buttons button').forEach(btn => btn.classList.remove('active'));
             }
             
             function addOptionListeners() {
@@ -368,8 +380,7 @@
             // --- LOGIC ---
             function updateCommand() {
                 if (!appState.selectedDistroKey || appState.selectedApps.size === 0) {
-                    commandOutput.value = '';
-                    return;
+                    commandOutput.value = ''; return;
                 }
                 const distro = distributions[appState.selectedDistroKey];
                 let commandParts = [];
