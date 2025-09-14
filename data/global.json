@@ -1,0 +1,56 @@
+[
+  {
+    "category": "BROWSERS",
+    "apps": [
+      { "id": "firefox", "name": "Firefox", "description": "A popular, open-source web browser focused on privacy." },
+      { "id": "chromium", "name": "Chromium", "description": "The open-source codebase for Google Chrome." }
+    ]
+  },
+  {
+    "category": "DEVELOPMENT",
+    "apps": [
+      { "id": "git", "name": "Git", "description": "A distributed version control system for tracking changes in source code." },
+      { "id": "vscode", "name": "VS Code", "description": "A lightweight but powerful source code editor from Microsoft." },
+      { "id": "docker", "name": "Docker", "description": "A platform for developing, shipping, and running applications in containers." },
+      { "id": "neovim", "name": "Neovim", "description": "A hyperextensible, Vim-based text editor." },
+      { "id": "build-essential", "name": "Build Essentials", "description": "Contains reference libraries, compilers (gcc, g++), and 'make' for compiling software." }
+    ]
+  },
+  {
+    "category": "COMMUNICATION",
+    "apps": [
+      { "id": "discord", "name": "Discord", "description": "A VoIP and instant messaging social platform." },
+      { "id": "slack", "name": "Slack", "description": "A channel-based messaging platform for team collaboration." },
+      { "id": "thunderbird", "name": "Thunderbird", "description": "An open-source email, news, and chat client from Mozilla." }
+    ]
+  },
+  {
+    "category": "MEDIA & GRAPHICS",
+    "apps": [
+      { "id": "vlc", "name": "VLC", "description": "A versatile multimedia player that plays most file formats." },
+      { "id": "gimp", "name": "GIMP", "description": "A free and open-source raster graphics editor for image manipulation." },
+      { "id": "inkscape", "name": "Inkscape", "description": "A professional vector graphics editor." },
+      { "id": "blender", "name": "Blender", "description": "A 3D computer graphics software toolset for creating animated films, visual effects, and 3D models." },
+      { "id": "audacity", "name": "Audacity", "description": "An easy-to-use, multi-track audio editor and recorder." },
+      { "id": "spotify", "name": "Spotify", "description": "A digital music streaming service. (May require third-party repositories)." }
+    ]
+  },
+  {
+    "category": "TERMINAL & UTILITIES",
+    "apps": [
+      { "id": "htop", "name": "htop", "description": "An interactive process viewer for Unix-like systems." },
+      { "id": "neofetch", "name": "Neofetch", "description": "A command-line system information tool." },
+      { "id": "timeshift", "name": "Timeshift", "description": "A system restore utility that takes incremental snapshots of the file system." },
+      { "id": "zsh", "name": "Zsh", "description": "An extended Bourne shell with many improvements." },
+      { "id": "guake", "name": "Guake", "description": "A top-down, Quake-style dropdown terminal emulator." }
+    ]
+  },
+  {
+    "category": "GAMING & VIRTUALIZATION",
+    "apps": [
+      { "id": "steam", "name": "Steam", "description": "A video game digital distribution service by Valve." },
+      { "id": "wine", "name": "Wine", "description": "A compatibility layer for running Windows applications on Linux." },
+      { "id": "virtualbox", "name": "VirtualBox", "description": "A powerful x86 and AMD64/Intel64 virtualization product." }
+    ]
+  }
+]
