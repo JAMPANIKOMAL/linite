@@ -41,3 +41,7 @@ This project was developed by Jampani Komal with the collaborative assistance of
 ## License
 
 This project is open source and available under the [MIT License](./LICENSE).
+## Future Roadmap
+- [ ] **PWA Conversion:** Convert to Progressive Web App for offline usage.
+- [ ] **Framework Migration:** Refactor vanilla JS to React/TypeScript for scalability.
+- [ ] **User Accounts:** Backend validation for saving custom package lists.
